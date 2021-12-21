@@ -1,2 +1,4 @@
 black
+blist
 gitpython
+tqdm
