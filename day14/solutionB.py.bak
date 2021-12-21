@@ -1,0 +1,63 @@
+import argparse
+from collections import Counter
+
+from tqdm import tqdm
+from blist import blist  # faster lists
+
+
+def parse(input_file):
+    with open(input_file) as f:
+        poly = blist(f.readline().strip())
+        _ = f.readline()
+        rules = [l.strip().split(" -> ") for l in f.readlines()]
+        rules = {rule[0]: rule[1] for rule in rules}
+    return poly, rules
+
+
+def make_poly(poly, rules, steps_count):
+    for _ in tqdm(range(steps_count)):
+        new_poly = blist(poly)
+        n = len(poly)
+        offset = 1
+        for i in range(n - 1):
+            segment = "".join(poly[i : i + 2])
+            if segment in rules:
+                atom = rules[segment]
+                new_poly.insert(i + offset, atom)
+                offset += 1
+        poly = new_poly
+    return poly
+
+
+def get_result(poly):
+    counter = Counter(poly)
+    counts = sorted([v for v in counter.values()])
+    return counts[-1] - counts[0]
+
+
+def main(input_file, output_file, nb_steps):
+    poly, rules = parse(input_file)
+    new_poly = make_poly(poly, rules, nb_steps)
+    res = get_result(new_poly)
+    print(res)
+    with open(output_file, "w") as f:
+        f.write(str(res))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test", action="store_true")
+    args = parser.parse_args()
+
+    if args.test:
+        input_file = "test_input.txt"
+        output_file = "test_outputB.txt"
+        nb_steps = 10
+        print("Running test mode...")
+    else:
+        input_file = "input.txt"
+        output_file = "outputB.txt"
+        nb_steps = 40
+        print("Running full mode...")
+
+    main(input_file, output_file, nb_steps)
